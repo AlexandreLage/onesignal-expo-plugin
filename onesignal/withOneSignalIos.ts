@@ -83,7 +83,14 @@ const withCustomAppGroupsKey: ConfigPlugin<OneSignalPluginProps> = (
 ) => {
   return withInfoPlist(config, (newConfig) => {
     if (props?.appGroupName) {
+      OneSignalLog.log(
+        `[Info.plist] Setting OneSignal_app_groups_key: ${props.appGroupName}`
+      );
       newConfig.modResults.OneSignal_app_groups_key = props?.appGroupName;
+    } else {
+      OneSignalLog.log(
+        `[Info.plist] No custom appGroupName provided, OneSignal_app_groups_key will not be set`
+      );
     }
 
     return newConfig;
@@ -104,18 +111,47 @@ const withAppGroupPermissions: ConfigPlugin<OneSignalPluginProps> = (
       newConfig.modResults[APP_GROUP_KEY] = [];
     }
     const modResultsArray = newConfig.modResults[APP_GROUP_KEY] as Array<any>;
-    const entitlement =
-      props?.appGroupName ??
-      `group.${newConfig?.ios?.bundleIdentifier || ""}.onesignal`;
-    if (modResultsArray.indexOf(entitlement) !== -1) {
-      return newConfig;
+    const defaultGroup = `group.${newConfig?.ios?.bundleIdentifier || ""}.onesignal`;
+    const entitlement = props?.appGroupName ?? defaultGroup;
+
+    OneSignalLog.log(
+      `[App Groups] Existing app groups: ${JSON.stringify(modResultsArray)}`
+    );
+    OneSignalLog.log(`[App Groups] Default group: ${defaultGroup}`);
+    OneSignalLog.log(`[App Groups] Target entitlement: ${entitlement}`);
+
+    // If a custom app group is provided, remove the default one if it exists
+    if (props?.appGroupName) {
+      const defaultIndex = modResultsArray.indexOf(defaultGroup);
+      if (defaultIndex !== -1) {
+        OneSignalLog.log(
+          `[App Groups] Removing default group: ${defaultGroup}`
+        );
+        modResultsArray.splice(defaultIndex, 1);
+      } else {
+        OneSignalLog.log(
+          `[App Groups] Default group not found, no removal needed`
+        );
+      }
     }
-    modResultsArray.push(entitlement);
+
+    // Add the entitlement if it doesn't already exist
+    if (modResultsArray.indexOf(entitlement) === -1) {
+      OneSignalLog.log(`[App Groups] Adding entitlement: ${entitlement}`);
+      modResultsArray.push(entitlement);
+    } else {
+      OneSignalLog.log(
+        `[App Groups] Entitlement already exists: ${entitlement}`
+      );
+    }
+
+    OneSignalLog.log(
+      `[App Groups] Final app groups: ${JSON.stringify(modResultsArray)}`
+    );
 
     return newConfig;
   });
 };
-
 const withEasManagedCredentials: ConfigPlugin<OneSignalPluginProps> = (
   config,
   props
@@ -184,9 +220,15 @@ const withOneSignalNSE: ConfigPlugin<OneSignalPluginProps> = (
 
       /* MODIFY COPIED EXTENSION FILES */
       const nseUpdater = new NseUpdaterManager(iosPath);
-      await nseUpdater.updateNSEEntitlements(
-        props?.appGroupName ?? `group.${config.ios?.bundleIdentifier}.onesignal`
+      const nseAppGroup =
+        props?.appGroupName ??
+        `group.${config.ios?.bundleIdentifier}.onesignal`;
+
+      OneSignalLog.log(
+        `[NSE App Groups] Updating NSE entitlements with app group: ${nseAppGroup}`
       );
+
+      await nseUpdater.updateNSEEntitlements(nseAppGroup);
       await nseUpdater.updateNSEBundleVersion(
         config.ios?.buildNumber ?? DEFAULT_BUNDLE_VERSION
       );
@@ -249,6 +291,17 @@ const withOneSignalXcodeProject: ConfigPlugin<OneSignalPluginProps> = (
       config.ios?.bundleIdentifier || "",
       props?.iosNSEBundleIdentifier
     );
+
+    OneSignalLog.log(
+      `[Xcode Project] Main app bundle identifier: ${config.ios?.bundleIdentifier}`
+    );
+    OneSignalLog.log(
+      `[Xcode Project] Custom NSE bundle identifier setting: ${props?.iosNSEBundleIdentifier || "not provided"}`
+    );
+    OneSignalLog.log(
+      `[Xcode Project] Computed NSE bundle identifier: ${nseBundleIdentifier}`
+    );
+
     const nseTarget = xcodeProject.addTarget(
       NSE_TARGET_NAME,
       "app_extension",
