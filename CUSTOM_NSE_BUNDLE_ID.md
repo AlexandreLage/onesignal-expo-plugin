@@ -20,9 +20,30 @@ com.example.myapp.OneSignalNotificationServiceExtension
 
 In some scenarios, this default bundle identifier may already be registered in Apple's developer portal, particularly in production apps where you cannot easily change your app's bundle identifier. This can cause conflicts and prevent successful builds.
 
+## Apple's Bundle ID Rule for App Extensions
+
+**Important:** Apple requires that app extension bundle identifiers follow a specific format:
+
+- The NSE bundle ID **must** start with your main app's bundle ID
+- Followed by **exactly ONE** additional segment (separated by a single dot)
+- You **cannot** have multiple segments after your main app's bundle ID
+
+### Valid Examples
+
+- Main app: `com.example.app`
+- NSE: `com.example.app.CustomNSE` ✅
+- NSE: `com.example.app.NotificationService` ✅
+- NSE: `com.example.app.Notifications` ✅
+
+### Invalid Examples
+
+- NSE: `com.example.app.nse.extension` ❌ (two segments after main bundle ID)
+- NSE: `com.example.app.custom.anything` ❌ (two segments after main bundle ID)
+- NSE: `com.different.app.nse` ❌ (doesn't start with main app's bundle ID)
+
 ## Solution
 
-The `iosNSEBundleIdentifier` plugin property allows you to specify a custom bundle identifier for the NSE.
+The `iosNSEBundleIdentifier` plugin property allows you to specify a custom bundle identifier for the NSE that follows Apple's rules.
 
 ## Usage
 
@@ -49,11 +70,11 @@ You can provide a suffix that will be appended to your main bundle identifier. T
 }
 ```
 
-**Result:** The NSE bundle identifier will be `com.example.myapp.CustomNotifications`
+**Result:** The NSE bundle identifier will be `com.example.myapp.CustomNotifications` ✅
 
 ### Option 2: Use a Complete Bundle Identifier
 
-You can provide a complete bundle identifier if you need full control over the naming.
+You can provide a complete bundle identifier if you need full control over the naming. **Note:** It must still follow Apple's rule of having only one segment after your main app's bundle ID.
 
 ```json
 {
@@ -66,7 +87,7 @@ You can provide a complete bundle identifier if you need full control over the n
         "onesignal-expo-plugin",
         {
           "mode": "production",
-          "iosNSEBundleIdentifier": "com.example.notifications.onesignal"
+          "iosNSEBundleIdentifier": "com.example.myapp.NotificationService"
         }
       ]
     ]
@@ -74,7 +95,35 @@ You can provide a complete bundle identifier if you need full control over the n
 }
 ```
 
-**Result:** The NSE bundle identifier will be `com.example.notifications.onesignal`
+**Result:** The NSE bundle identifier will be `com.example.myapp.NotificationService` ✅
+
+### Invalid Configuration Examples
+
+The plugin will throw a helpful error if you try to use an invalid bundle ID:
+
+```json
+{
+  "iosNSEBundleIdentifier": ".custom.nse"
+}
+```
+
+❌ **Error:** The suffix cannot contain dots
+
+```json
+{
+  "iosNSEBundleIdentifier": "com.example.myapp.nse.extension"
+}
+```
+
+❌ **Error:** Cannot have multiple segments after the main bundle ID
+
+```json
+{
+  "iosNSEBundleIdentifier": "com.different.app.nse"
+}
+```
+
+❌ **Error:** Must start with your main app's bundle ID
 
 ### Option 3: Use Default Behavior
 

@@ -88,17 +88,69 @@ export default {
 
 You can pass props to the plugin config object to configure:
 
-| Plugin Prop              |              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| ------------------------ | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mode`                   | **required** | Used to configure [APNs environment](https://developer.apple.com/documentation/bundleresources/entitlements/aps-environment) entitlement. `"development"` or `"production"`                                                                                                                                                                                                                                                                                                  |
-| `devTeam`                | optional     | Used to configure Apple Team ID. You can find your Apple Team ID by running `expo credentials:manager` e.g: `"91SW8A37CR"`                                                                                                                                                                                                                                                                                                                                                   |
-| `iPhoneDeploymentTarget` | optional     | Target `IPHONEOS_DEPLOYMENT_TARGET` value to be used when adding the iOS [NSE](https://documentation.onesignal.com/docs/service-extensions). A deployment target is nothing more than the minimum version of the operating system the application can run on. This value should match the value in your Podfile e.g: `"12.0"`.                                                                                                                                               |
-| `smallIcons`             | optional     | An array of local paths to small notification icons for Android. Image should be white, transparent, and 96x96 in size. Input images will be automatically scaled down and placed in the appropriate resource folders. e.g: `["./assets/ic_stat_onesignal_default.png"]`. See https://documentation.onesignal.com/docs/customize-notification-icons#small-notification-icons.                                                                                                |
-| `largeIcons`             | optional     | An array of local paths to large notification icons for Android. Image should be white, transparent, and 256x256 in size. e.g: `["./assets/ic_onesignal_large_icon_default.png"]`. See https://documentation.onesignal.com/docs/customize-notification-icons#large-notification-icons.                                                                                                                                                                                       |
-| `smallIconAccentColor`   | optional     | The accent color to use for notification icons on Android. Must be a valid hex value, e.g: `"#FF0000"`                                                                                                                                                                                                                                                                                                                                                                       |
-| `iosNSEFilePath`         | optional     | The local path to a custom Notification Service Extension (NSE), written in Objective-C. The NSE will typically start as a copy of the [default NSE](https://github.com/OneSignal/onesignal-expo-plugin/blob/main/support/serviceExtensionFiles/NotificationService.m), then altered to support any custom logic required. e.g: `"./assets/NotificationService.m"`.                                                                                                          |
-| `appGroupName`           | optional     | Used to configure a custom app group name according to OneSignal's [documentation](https://documentation.onesignal.com/docs/service-extensions#ios-app-group-name). If unused, the plugin will use the value of `group.{ios.bundleIdentifier}.onesignal`.                                                                                                                                                                                                                    |
-| `iosNSEBundleIdentifier` | optional     | Custom bundle identifier for the iOS NSE (Notification Service Extension). By default, the NSE bundle identifier is set to `{ios.bundleIdentifier}.OneSignalNotificationServiceExtension`. You can provide either a full bundle ID (e.g., `"com.example.myapp.customNSE"`) or just a suffix that will be appended to the main bundle ID (e.g., `".customNSE"`). This is useful when the default bundle ID is already registered or when you need a custom naming convention. |
+| Plugin Prop              |              |                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------ | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mode`                   | **required** | Used to configure [APNs environment](https://developer.apple.com/documentation/bundleresources/entitlements/aps-environment) entitlement. `"development"` or `"production"`                                                                                                                                                                                                                                            |
+| `devTeam`                | optional     | Used to configure Apple Team ID. You can find your Apple Team ID by running `expo credentials:manager` e.g: `"91SW8A37CR"`                                                                                                                                                                                                                                                                                             |
+| `iPhoneDeploymentTarget` | optional     | Target `IPHONEOS_DEPLOYMENT_TARGET` value to be used when adding the iOS [NSE](https://documentation.onesignal.com/docs/service-extensions). A deployment target is nothing more than the minimum version of the operating system the application can run on. This value should match the value in your Podfile e.g: `"12.0"`.                                                                                         |
+| `smallIcons`             | optional     | An array of local paths to small notification icons for Android. Image should be white, transparent, and 96x96 in size. Input images will be automatically scaled down and placed in the appropriate resource folders. e.g: `["./assets/ic_stat_onesignal_default.png"]`. See https://documentation.onesignal.com/docs/customize-notification-icons#small-notification-icons.                                          |
+| `largeIcons`             | optional     | An array of local paths to large notification icons for Android. Image should be white, transparent, and 256x256 in size. e.g: `["./assets/ic_onesignal_large_icon_default.png"]`. See https://documentation.onesignal.com/docs/customize-notification-icons#large-notification-icons.                                                                                                                                 |
+| `smallIconAccentColor`   | optional     | The accent color to use for notification icons on Android. Must be a valid hex value, e.g: `"#FF0000"`                                                                                                                                                                                                                                                                                                                 |
+| `iosNSEFilePath`         | optional     | The local path to a custom Notification Service Extension (NSE), written in Objective-C. The NSE will typically start as a copy of the [default NSE](https://github.com/OneSignal/onesignal-expo-plugin/blob/main/support/serviceExtensionFiles/NotificationService.m), then altered to support any custom logic required. e.g: `"./assets/NotificationService.m"`.                                                    |
+| `appGroupName`           | optional     | Used to configure a custom app group name according to OneSignal's [documentation](https://documentation.onesignal.com/docs/service-extensions#ios-app-group-name). If unused, the plugin will use the value of `group.{ios.bundleIdentifier}.onesignal`.                                                                                                                                                              |
+| `iosNSEBundleIdentifier` | optional     | Custom bundle identifier for the iOS NSE (Notification Service Extension). By default, the NSE bundle identifier is set to `{ios.bundleIdentifier}.OneSignalNotificationServiceExtension`. You can provide either a full bundle ID or just a suffix (starting with a dot). **Important:** Must follow Apple's rule - the NSE bundle ID must have only ONE segment after your main app's bundle ID. See examples below. |
+
+#### `iosNSEBundleIdentifier` Examples
+
+This is useful when the default bundle ID is already registered or you need a custom naming convention.
+
+**Using a suffix (recommended):**
+
+```json
+{
+  "ios": {
+    "bundleIdentifier": "com.example.myapp"
+  },
+  "plugins": [
+    [
+      "onesignal-expo-plugin",
+      {
+        "mode": "production",
+        "iosNSEBundleIdentifier": ".CustomNSE"
+      }
+    ]
+  ]
+}
+```
+
+Result: `com.example.myapp.CustomNSE` ✅
+
+**Using a full bundle ID:**
+
+```json
+{
+  "ios": {
+    "bundleIdentifier": "com.example.myapp"
+  },
+  "plugins": [
+    [
+      "onesignal-expo-plugin",
+      {
+        "mode": "production",
+        "iosNSEBundleIdentifier": "com.example.myapp.NotificationService"
+      }
+    ]
+  ]
+}
+```
+
+Result: `com.example.myapp.NotificationService` ✅
+
+**Invalid Examples (will throw an error):**
+
+- ❌ `".custom.nse"` - suffix cannot contain dots
+- ❌ `"com.example.myapp.nse.extension"` - cannot have multiple segments after main bundle ID
+- ❌ `"com.different.app.nse"` - must start with your main app's bundle ID
 
 ### OneSignal App ID
 

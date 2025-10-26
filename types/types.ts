@@ -47,8 +47,27 @@ export type OneSignalPluginProps = {
   appGroupName?: string;
 
   /**
-   * (optional) Custom bundle identifier for the NSE. If not provided, defaults to {mainBundleId}.OneSignalNotificationServiceExtension
-   * You can provide either a full bundle ID (e.g., "com.example.myapp.customNSE") or just a suffix that will be appended to the main bundle ID (e.g., ".customNSE")
+   * (optional) Custom bundle identifier for the NSE (Notification Service Extension).
+   *
+   * If not provided, defaults to `{mainBundleId}.OneSignalNotificationServiceExtension`
+   *
+   * **Important:** Must follow Apple's bundle ID rules for app extensions:
+   * - If providing a full bundle ID, it MUST start with your main app's bundle ID followed by exactly ONE segment
+   * - Example: If main app is `com.example.app`, NSE must be `com.example.app.Something` (only one period after main bundle ID)
+   * - ❌ Invalid: `com.example.app.nse.extension` (two periods after main bundle ID)
+   * - ✅ Valid: `com.example.app.CustomNSE` (one period after main bundle ID)
+   *
+   * You can also provide just a suffix starting with a dot (e.g., `.CustomNSE`) which will be appended to the main bundle ID.
+   *
+   * @example
+   * // Using a suffix (recommended)
+   * iosNSEBundleIdentifier: ".CustomNSE"
+   * // Result: com.example.app.CustomNSE
+   *
+   * @example
+   * // Using a full bundle ID
+   * iosNSEBundleIdentifier: "com.example.app.NotificationService"
+   * // Result: com.example.app.NotificationService
    */
   iosNSEBundleIdentifier?: string;
 };
