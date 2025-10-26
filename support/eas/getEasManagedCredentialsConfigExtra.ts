@@ -1,8 +1,17 @@
-import { ExpoConfig } from '@expo/config-types';
+import { ExpoConfig } from "@expo/config-types";
 import { OneSignalPluginProps } from "../../types/types";
 import { NSE_TARGET_NAME } from "../iosConstants";
+import { computeNSEBundleIdentifier } from "../helpers";
 
-export default function getEasManagedCredentialsConfigExtra(config: ExpoConfig, props?: OneSignalPluginProps): {[k: string]: any} {
+export default function getEasManagedCredentialsConfigExtra(
+  config: ExpoConfig,
+  props?: OneSignalPluginProps
+): { [k: string]: any } {
+  const nseBundleIdentifier = computeNSEBundleIdentifier(
+    config?.ios?.bundleIdentifier || "",
+    props?.iosNSEBundleIdentifier
+  );
+
   return {
     ...config.extra,
     eas: {
@@ -14,21 +23,23 @@ export default function getEasManagedCredentialsConfigExtra(config: ExpoConfig, 
           ios: {
             ...config.extra?.eas?.build?.experimental?.ios,
             appExtensions: [
-              ...(config.extra?.eas?.build?.experimental?.ios?.appExtensions ?? []),
+              ...(config.extra?.eas?.build?.experimental?.ios?.appExtensions ??
+                []),
               {
                 // keep in sync with native changes in NSE
                 targetName: NSE_TARGET_NAME,
-                bundleIdentifier: `${config?.ios?.bundleIdentifier}.${NSE_TARGET_NAME}`,
+                bundleIdentifier: nseBundleIdentifier,
                 entitlements: {
-                  'com.apple.security.application-groups': [
-                    props?.appGroupName ?? `group.${config?.ios?.bundleIdentifier}.onesignal`
-                  ]
+                  "com.apple.security.application-groups": [
+                    props?.appGroupName ??
+                      `group.${config?.ios?.bundleIdentifier}.onesignal`,
+                  ],
                 },
-              }
-            ]
-          }
-        }
-      }
-    }
-  }
+              },
+            ],
+          },
+        },
+      },
+    },
+  };
 }

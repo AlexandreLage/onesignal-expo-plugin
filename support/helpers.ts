@@ -10,16 +10,26 @@ export function validatePluginProps(props: any): void {
     throw new Error("OneSignal Expo Plugin: 'devTeam' must be a string.");
   }
 
-  if (props.iPhoneDeploymentTarget && typeof props.iPhoneDeploymentTarget !== "string") {
-    throw new Error("OneSignal Expo Plugin: 'iPhoneDeploymentTarget' must be a string.");
+  if (
+    props.iPhoneDeploymentTarget &&
+    typeof props.iPhoneDeploymentTarget !== "string"
+  ) {
+    throw new Error(
+      "OneSignal Expo Plugin: 'iPhoneDeploymentTarget' must be a string."
+    );
   }
 
   if (props.smallIcons && !Array.isArray(props.smallIcons)) {
     throw new Error("OneSignal Expo Plugin: 'smallIcons' must be an array.");
   }
 
-  if (props.smallIconAccentColor && typeof props.smallIconAccentColor !== "string") {
-    throw new Error("OneSignal Expo Plugin: 'smallIconAccentColor' must be a string.");
+  if (
+    props.smallIconAccentColor &&
+    typeof props.smallIconAccentColor !== "string"
+  ) {
+    throw new Error(
+      "OneSignal Expo Plugin: 'smallIconAccentColor' must be a string."
+    );
   }
 
   if (props.largeIcons && !Array.isArray(props.largeIcons)) {
@@ -27,11 +37,22 @@ export function validatePluginProps(props: any): void {
   }
 
   if (props.iosNSEFilePath && typeof props.iosNSEFilePath !== "string") {
-    throw new Error("OneSignal Expo Plugin: 'iosNSEFilePath' must be a string.");
+    throw new Error(
+      "OneSignal Expo Plugin: 'iosNSEFilePath' must be a string."
+    );
   }
 
   if (props.appGroupName && typeof props.appGroupName !== "string") {
     throw new Error("OneSignal Expo Plugin: 'appGroupName' must be a string.");
+  }
+
+  if (
+    props.iosNSEBundleIdentifier &&
+    typeof props.iosNSEBundleIdentifier !== "string"
+  ) {
+    throw new Error(
+      "OneSignal Expo Plugin: 'iosNSEBundleIdentifier' must be a string."
+    );
   }
 
   // check for extra properties
@@ -39,7 +60,33 @@ export function validatePluginProps(props: any): void {
 
   for (const prop of inputProps) {
     if (!ONESIGNAL_PLUGIN_PROPS.includes(prop)) {
-      throw new Error(`OneSignal Expo Plugin: You have provided an invalid property "${prop}" to the OneSignal plugin.`);
+      throw new Error(
+        `OneSignal Expo Plugin: You have provided an invalid property "${prop}" to the OneSignal plugin.`
+      );
     }
   }
+}
+
+/**
+ * Computes the NSE bundle identifier based on the main bundle identifier and optional custom setting
+ * @param mainBundleIdentifier The main app's bundle identifier
+ * @param customNSEBundleIdentifier Optional custom NSE bundle identifier from plugin props
+ * @returns The computed NSE bundle identifier
+ */
+export function computeNSEBundleIdentifier(
+  mainBundleIdentifier: string,
+  customNSEBundleIdentifier?: string
+): string {
+  if (!customNSEBundleIdentifier) {
+    // Default behavior
+    return `${mainBundleIdentifier}.OneSignalNotificationServiceExtension`;
+  }
+
+  // If it starts with a dot, treat it as a suffix
+  if (customNSEBundleIdentifier.startsWith(".")) {
+    return `${mainBundleIdentifier}${customNSEBundleIdentifier}`;
+  }
+
+  // Otherwise, use it as the full bundle identifier
+  return customNSEBundleIdentifier;
 }

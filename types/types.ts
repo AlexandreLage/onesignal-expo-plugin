@@ -1,7 +1,7 @@
 /**
  * OneSignalPluginProps refer to the properties set by the user in their app config file (e.g: app.json)
  */
- export type OneSignalPluginProps = {
+export type OneSignalPluginProps = {
   /**
    * (required) Used to configure APNs environment entitlement. "development" or "production"
    */
@@ -22,29 +22,35 @@
    * (optional) The small notification icons for Android.  Images will be automatically scaled up/down, the recommended size
    * is 96x96 to always scale down.
    */
-  smallIcons?:            string[];
+  smallIcons?: string[];
 
   /**
    * (optional) The accent color to use for notification icons on Android. Must be a valid Android color resource, for example: "#FF0000"
    */
-  smallIconAccentColor?:  string;
+  smallIconAccentColor?: string;
 
   /**
    * (optional) The large notification icons for Android. Images will be automatically scaled up/down to 256x256.
    */
-  largeIcons?:            string[];
+  largeIcons?: string[];
 
   /**
    * (optional) The local path to a custom Notification Service Extension (NSE), written in Objective-C. The NSE will typically start as a copy
    * of the default NSE found at (support/serviceExtensionFiles/NotificationService.m, then altered to support any custom
    * logic required.
    */
-   iosNSEFilePath?:       string;
+  iosNSEFilePath?: string;
 
   /**
    * (optional) The app group name to use for the OneSignal SDK.
    */
   appGroupName?: string;
+
+  /**
+   * (optional) Custom bundle identifier for the NSE. If not provided, defaults to {mainBundleId}.OneSignalNotificationServiceExtension
+   * You can provide either a full bundle ID (e.g., "com.example.myapp.customNSE") or just a suffix that will be appended to the main bundle ID (e.g., ".customNSE")
+   */
+  iosNSEBundleIdentifier?: string;
 };
 
 export const ONESIGNAL_PLUGIN_PROPS: string[] = [
@@ -55,10 +61,11 @@ export const ONESIGNAL_PLUGIN_PROPS: string[] = [
   "largeIcons",
   "iosNSEFilePath",
   "smallIconAccentColor",
-  "appGroupName"
+  "appGroupName",
+  "iosNSEBundleIdentifier",
 ];
 
 export enum Mode {
   Dev = "development",
-  Prod = "production"
+  Prod = "production",
 }
