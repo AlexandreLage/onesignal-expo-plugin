@@ -2,7 +2,6 @@ import { ExpoConfig } from "@expo/config-types";
 import { OneSignalPluginProps } from "../../types/types";
 import { NSE_TARGET_NAME } from "../iosConstants";
 import { computeNSEBundleIdentifier } from "../helpers";
-import { OneSignalLog } from "../OneSignalLog";
 
 export default function getEasManagedCredentialsConfigExtra(
   config: ExpoConfig,
@@ -15,11 +14,6 @@ export default function getEasManagedCredentialsConfigExtra(
 
   const appGroup =
     props?.appGroupName ?? `group.${config?.ios?.bundleIdentifier}.onesignal`;
-
-  OneSignalLog.log(
-    `[EAS Credentials] NSE Bundle Identifier: ${nseBundleIdentifier}`
-  );
-  OneSignalLog.log(`[EAS Credentials] App Group for NSE: ${appGroup}`);
 
   return {
     ...config.extra,
